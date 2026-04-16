@@ -31,22 +31,15 @@
     border-left: 6px solid #ffc107;
     padding: 15px;
     margin-bottom: 25px;
-    font-size: 15px;
   }
 
   .pregunta {
     margin-bottom: 25px;
   }
 
-  .pregunta h3 {
-    margin-bottom: 10px;
-    color: #333;
-  }
-
   label {
     display: block;
     padding: 6px 0;
-    cursor: pointer;
   }
 
   input[type="text"] {
@@ -73,122 +66,130 @@
     display: none;
     background: #b00020;
     color: white;
-    padding: 35px;
+    padding: 40px;
     border-radius: 14px;
     text-align: center;
     font-size: 20px;
     max-width: 900px;
     margin: 60px auto;
   }
+
+  #advertenciaCambio {
+    display: none;
+    background: #fff3cd;
+    border-left: 6px solid #ff9800;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
 </style>
 </head>
 
 <body>
 
-<!-- ================= EXAMEN ================= -->
 <div class="contenedor" id="examen">
   <h1>Examen de Seguridad – Contratistas</h1>
 
-  <div class="advertencia">
-    ⚠️ <strong>Importante:</strong><br>
-    No cambies de pestaña, no recargues la página y no cierres el navegador.
-    Cualquier acción indebida invalidará automáticamente el examen.
+  <div id="advertenciaCambio">
+    ⚠️ ADVERTENCIA:<br>
+    Se detectó un cambio de pestaña.<br>
+    **Al segundo intento el examen se bloqueará automáticamente.**
   </div>
 
   <div class="pregunta">
     <h3>Nombre completo</h3>
-    <input type="text" id="nombre" placeholder="Escribe tu nombre">
+    <input type="text" id="nombre">
   </div>
 
   <div class="pregunta">
-    <h3>1. ¿Cuál es el objetivo principal del EPP?</h3>
-    <label><input type="radio" name="p1"> Reducir riesgos laborales</label>
-    <label><input type="radio" name="p1"> Aumentar productividad</label>
-    <label><input type="radio" name="p1"> Cumplir horarios</label>
+    <h3>1. ¿Cuál es el objetivo del EPP?</h3>
+    <label><input type="radio" name="p1"> Reducir riesgos</label>
+    <label><input type="radio" name="p1"> Acelerar procesos</label>
   </div>
 
   <div class="pregunta">
-    <h3>2. ¿Qué equipo es obligatorio en áreas operativas?</h3>
+    <h3>2. ¿Qué es obligatorio en área operativa?</h3>
     <label><input type="checkbox"> Casco</label>
-    <label><input type="checkbox"> Lentes de seguridad</label>
-    <label><input type="checkbox"> Botas con casquillo</label>
+    <label><input type="checkbox"> Lentes</label>
+    <label><input type="checkbox"> Botas</label>
   </div>
 
   <div class="pregunta">
-    <h3>3. ¿Qué debes hacer ante un incidente?</h3>
-    <input type="text" placeholder="Escribe tu respuesta">
+    <h3>3. ¿Qué hacer ante un incidente?</h3>
+    <input type="text">
   </div>
 
   <button onclick="enviar()">Enviar examen</button>
 </div>
 
-<!-- ================= BLOQUEO VISIBLE ================= -->
 <div id="bloqueado">
   🚫 <strong>EXAMEN BLOQUEADO</strong><br><br>
-  Se detectó un cambio de ventana o pestaña.<br>
-  Este evento fue registrado automáticamente.
+  Se detectó una acción no permitida.<br>
+  El progreso fue eliminado y el intento quedó registrado.
 </div>
 
 <script>
 let bloqueado = false;
-let salidas = 0;
+let cambiosVentana = 0;
 
-/* === BLOQUEO VISIBLE: CAMBIO DE PESTAÑA === */
+/* ===== CAMBIO DE PESTAÑA ===== */
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && !bloqueado) {
-    salidas++;
-    bloquearExamen("cambio_ventana", true);
+    cambiosVentana++;
+
+    if (cambiosVentana === 1) {
+      document.getElementById("advertenciaCambio").style.display = "block";
+    } else if (cambiosVentana >= 2) {
+      bloquearExamen("segundo_cambio_ventana");
+    }
   }
 });
 
-/* === BLOQUEO SILENCIOSO: RECARGA TECLADO === */
-document.addEventListener("keydown", function (e) {
+/* ===== RECARGA = BLOQUEO INMEDIATO ===== */
+document.addEventListener("keydown", e => {
   if (
     e.key === "F5" ||
     ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")
   ) {
-    bloquearExamen("recarga_teclado", false);
+    bloquearExamen("recarga_teclado");
   }
 });
 
-/* === BLOQUEO SILENCIOSO: BOTÓN RECARGAR / CERRAR === */
-window.addEventListener("beforeunload", function () {
+window.addEventListener("beforeunload", () => {
   if (!bloqueado) {
-    bloquearExamen("recarga_navegador", false);
+    bloquearExamen("recarga_navegador");
   }
 });
 
-/* === FUNCIÓN GENERAL DE BLOQUEO === */
-function bloquearExamen(motivo, mostrarMensaje) {
+/* ===== BLOQUEO TOTAL ===== */
+function bloquearExamen(motivo) {
   if (bloqueado) return;
   bloqueado = true;
 
-  enviarDatos("bloqueado", motivo);
+  // borrar progreso
+  document.getElementById("examen").innerHTML = "";
+  document.getElementById("bloqueado").style.display = "block";
 
-  if (mostrarMensaje) {
-    document.getElementById("examen").style.display = "none";
-    document.getElementById("bloqueado").style.display = "block";
-  }
+  enviarDatos("bloqueado", motivo);
 }
 
-/* === ENVÍO NORMAL === */
+/* ===== ENVÍO ===== */
 function enviar() {
   if (bloqueado) return;
   enviarDatos("terminado", "normal");
   alert("Examen enviado correctamente");
 }
 
-/* === ENVÍO A POWER AUTOMATE (OPCIONAL) === */
+/* ===== ENVÍO BACKEND ===== */
 function enviarDatos(estado, motivo) {
   fetch("PEGA_AQUI_TU_ENDPOINT_DE_POWER_AUTOMATE", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      nombre: document.getElementById("nombre").value || "Sin nombre",
-      examen: "Seguridad Contratistas",
+      nombre: document.getElementById("nombre")?.value || "",
       estado: estado,
       motivo: motivo,
-      salidas: salidas,
+      cambiosVentana: cambiosVentana,
       fecha: new Date().toISOString()
     })
   });
