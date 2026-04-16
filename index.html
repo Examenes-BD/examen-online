@@ -5,30 +5,65 @@
 <title>Examen de Seguridad</title>
 
 <style>
-body{
-  font-family:Segoe UI,Arial,sans-serif;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  margin:0;padding:0;
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  margin: 0;
+  padding: 0;
 }
-.contenedor{
-  max-width:900px;margin:40px auto;
-  background:white;padding:30px;border-radius:14px;
+.contenedor {
+  max-width: 900px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 14px;
 }
-h1{text-align:center;color:#003366;}
-.pregunta{margin-bottom:20px;}
-#bloqueado{display:none;background:#b00020;color:white;padding:40px;text-align:center;border-radius:14px;}
-#adWarning{display:none;background:#fff3cd;border-left:6px solid #ff9800;padding:15px;margin-bottom:15px;}
+h1 {
+  text-align: center;
+  color: #003366;
+}
+.pregunta {
+  margin-bottom: 20px;
+}
+#adRecarga, #adVentana {
+  display: none;
+  background: #fff3cd;
+  border-left: 6px solid #ffc107;
+  padding: 15px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+#bloqueado {
+  display: none;
+  background: #b00020;
+  color: white;
+  padding: 40px;
+  border-radius: 14px;
+  text-align: center;
+  max-width: 900px;
+  margin: 50px auto;
+}
+button {
+  padding: 12px 25px;
+  font-size: 16px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="contenedor" id="examen">
+
 <h1>Examen de Seguridad – Contratistas</h1>
 
-<div id="adWarning">
-⚠️ ADVERTENCIA:  
-No cambies de pestaña. Al segundo intento el examen se bloqueará.
+<div id="adRecarga">
+⚠️ ADVERTENCIA:<br>
+Si recargas nuevamente, el examen se bloqueará.
+</div>
+
+<div id="adVentana">
+⚠️ ADVERTENCIA:<br>
+No cambies de pestaña nuevamente o el examen será bloqueado.
 </div>
 
 <div class="pregunta">
@@ -37,69 +72,92 @@ No cambies de pestaña. Al segundo intento el examen se bloqueará.
 </div>
 
 <div id="preguntas">
-<div class="pregunta">¿Objetivo del EPP?<br><input></div>
-<div class="pregunta">Equipo obligatorio<br><input></div>
-<div class="pregunta">¿Qué hacer ante un incidente?<br><input></div>
+  <div class="pregunta">¿Objetivo del EPP?<br><input></div>
+  <div class="pregunta">Equipo obligatorio<br><input></div>
+  <div class="pregunta">¿Qué hacer ante un incidente?<br><input></div>
+  <div class="pregunta">¿A quién reportar un accidente?<br><input></div>
 </div>
 
-<button onclick="enviar()">Enviar</button>
+<button onclick="enviar()">Enviar examen</button>
+
 </div>
 
 <div id="bloqueado">
 🚫 <strong>EXAMEN BLOQUEADO</strong><br><br>
-Tu intento fue registrado y el examen quedó invalidado.
+El intento fue invalidado y el progreso eliminado.
 </div>
 
 <script>
-let cambios = sessionStorage.getItem("cambiosVentana") ? Number(sessionStorage.getItem("cambiosVentana")) : 0;
+/* ===== VARIABLES PERSISTENTES ===== */
+let recargas = Number(sessionStorage.getItem("recargas") || 0);
+let cambiosVentana = Number(sessionStorage.getItem("cambiosVentana") || 0);
 let bloqueado = sessionStorage.getItem("bloqueado") === "true";
 
-/* ---- SHUFFLE PREGUNTAS (excepto nombre) ---- */
-function mezclarPreguntas(){
-  const cont=document.getElementById("preguntas");
-  [...cont.children].sort(()=>Math.random()-0.5).forEach(e=>cont.appendChild(e));
+/* ===== MEZCLAR PREGUNTAS ===== */
+function mezclarPreguntas() {
+  let cont = document.getElementById("preguntas");
+  [...cont.children]
+    .sort(() => Math.random() - 0.5)
+    .forEach(p => cont.appendChild(p));
 }
 
-/* ---- BLOQUEO SI YA ESTABA BLOQUEADO ---- */
-if(bloqueado){
-  document.getElementById("examen").style.display="none";
-  document.getElementById("bloqueado").style.display="block";
-}else{
+/* ===== ESTADO INICIAL ===== */
+if (bloqueado) {
+  document.getElementById("examen").style.display = "none";
+  document.getElementById("bloqueado").style.display = "block";
+} else {
   mezclarPreguntas();
 }
 
-/* ---- CAMBIO DE PESTAÑA ---- */
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden&&!bloqueado){
-    cambios++;
-    sessionStorage.setItem("cambiosVentana", cambios);
-    if(cambios===1){
-      document.getElementById("adWarning").style.display="block";
-    }
-    if(cambios>=2){
-      bloquear("doble_cambio_ventana");
+/* ===== CAMBIO DE PESTAÑA ===== */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && !bloqueado) {
+    cambiosVentana++;
+    sessionStorage.setItem("cambiosVentana", cambiosVentana);
+
+    if (cambiosVentana === 1) {
+      document.getElementById("adVentana").style.display = "block";
+    } else if (cambiosVentana >= 2) {
+      bloquear();
     }
   }
 });
 
-/* ---- RECARGA = BLOQUEO TOTAL ---- */
-window.addEventListener("beforeunload",()=>{
-  if(!bloqueado){
-    sessionStorage.setItem("bloqueado","true");
+/* ===== DETECTAR RECARGA ===== */
+window.addEventListener("beforeunload", () => {
+  if (!bloqueado) {
+    recargas++;
+    sessionStorage.setItem("recargas", recargas);
+
+    if (recargas === 1) {
+      sessionStorage.setItem("mostrarAvisoRecarga", "true");
+    } else if (recargas >= 2) {
+      sessionStorage.setItem("bloqueado", "true");
+    }
   }
 });
 
-/* ---- BLOQUEO DEFINITIVO ---- */
-function bloquear(motivo){
-  sessionStorage.setItem("bloqueado","true");
-  document.getElementById("examen").style.display="none";
-  document.getElementById("bloqueado").style.display="block";
+/* ===== AL VOLVER DE RECARGA ===== */
+if (sessionStorage.getItem("mostrarAvisoRecarga") === "true") {
+  document.getElementById("adRecarga").style.display = "block";
+  sessionStorage.removeItem("mostrarAvisoRecarga");
 }
 
-/* ---- ENVÍO ---- */
-function enviar(){
-  if(sessionStorage.getItem("bloqueado")==="true")return;
-  alert("Examen enviado");
+if (sessionStorage.getItem("bloqueado") === "true") {
+  bloquear();
+}
+
+/* ===== BLOQUEO FINAL ===== */
+function bloquear() {
+  sessionStorage.setItem("bloqueado", "true");
+  document.getElementById("examen").style.display = "none";
+  document.getElementById("bloqueado").style.display = "block";
+}
+
+/* ===== ENVÍO ===== */
+function enviar() {
+  if (sessionStorage.getItem("bloqueado") === "true") return;
+  alert("Examen enviado correctamente");
 }
 </script>
 
