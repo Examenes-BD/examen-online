@@ -11,6 +11,18 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* ===== BLOQUEO DE SELECCIÓN ===== */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+input {
+  user-select: text;
+}
+
 .contenedor {
   max-width: 900px;
   margin: 40px auto;
@@ -18,13 +30,16 @@ body {
   padding: 30px;
   border-radius: 14px;
 }
+
 h1 {
   text-align: center;
   color: #003366;
 }
+
 .pregunta {
   margin-bottom: 20px;
 }
+
 #adRecarga, #adVentana {
   display: none;
   background: #fff3cd;
@@ -33,6 +48,7 @@ h1 {
   margin-bottom: 15px;
   font-weight: bold;
 }
+
 #bloqueado {
   display: none;
   background: #b00020;
@@ -43,6 +59,7 @@ h1 {
   max-width: 900px;
   margin: 50px auto;
 }
+
 button {
   padding: 12px 25px;
   font-size: 16px;
@@ -88,9 +105,10 @@ El intento fue invalidado y el progreso eliminado.
 </div>
 
 <script>
-/* ===== VARIABLES PERSISTENTES ===== */
+/* ===== VARIABLES ===== */
 let recargas = Number(sessionStorage.getItem("recargas") || 0);
 let cambiosVentana = Number(sessionStorage.getItem("cambiosVentana") || 0);
+let capturas = Number(sessionStorage.getItem("capturas") || 0);
 let bloqueado = sessionStorage.getItem("bloqueado") === "true";
 
 /* ===== MEZCLAR PREGUNTAS ===== */
@@ -115,15 +133,33 @@ document.addEventListener("visibilitychange", () => {
     cambiosVentana++;
     sessionStorage.setItem("cambiosVentana", cambiosVentana);
 
+    document.body.style.filter = "blur(10px)";
+
     if (cambiosVentana === 1) {
       document.getElementById("adVentana").style.display = "block";
-    } else if (cambiosVentana >= 2) {
+    } else {
+      bloquear();
+    }
+  } else {
+    document.body.style.filter = "none";
+  }
+});
+
+/* ===== POSIBLE SCREENSHOT ===== */
+window.addEventListener("blur", () => {
+  if (!bloqueado) {
+    capturas++;
+    sessionStorage.setItem("capturas", capturas);
+
+    if (capturas === 1) {
+      alert("⚠️ ADVERTENCIA: Se detectó una posible captura de pantalla.");
+    } else {
       bloquear();
     }
   }
 });
 
-/* ===== DETECTAR RECARGA ===== */
+/* ===== RECARGA ===== */
 window.addEventListener("beforeunload", () => {
   if (!bloqueado) {
     recargas++;
@@ -131,13 +167,13 @@ window.addEventListener("beforeunload", () => {
 
     if (recargas === 1) {
       sessionStorage.setItem("mostrarAvisoRecarga", "true");
-    } else if (recargas >= 2) {
+    } else {
       sessionStorage.setItem("bloqueado", "true");
     }
   }
 });
 
-/* ===== AL VOLVER DE RECARGA ===== */
+/* ===== REGRESO DE RECARGA ===== */
 if (sessionStorage.getItem("mostrarAvisoRecarga") === "true") {
   document.getElementById("adRecarga").style.display = "block";
   sessionStorage.removeItem("mostrarAvisoRecarga");
@@ -153,6 +189,22 @@ function bloquear() {
   document.getElementById("examen").style.display = "none";
   document.getElementById("bloqueado").style.display = "block";
 }
+
+/* ===== BLOQUEOS ADICIONALES ===== */
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+document.addEventListener("copy", e => e.preventDefault());
+document.addEventListener("cut", e => e.preventDefault());
+document.addEventListener("paste", e => e.preventDefault());
+
+document.addEventListener("keydown", e => {
+  if (
+    (e.ctrlKey || e.metaKey) &&
+    ["c","x","v","u","s","p"].includes(e.key.toLowerCase())
+  ) {
+    e.preventDefault();
+  }
+});
 
 /* ===== ENVÍO ===== */
 function enviar() {
