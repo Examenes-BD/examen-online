@@ -12,51 +12,42 @@ body {
   padding: 0;
 }
 
-/* ===== BLOQUEO DE SELECCIÓN ===== */
-* {
-  user-select: none;
-}
-
-input, textarea {
-  user-select: text;
-}
+* { user-select: none; }
+input { user-select: text; }
 
 .contenedor {
   max-width: 900px;
-  margin: 40px auto;
-  background: #fff;
+  margin: 30px auto;
+  background: #ffffff;
   padding: 30px;
   border-radius: 14px;
 }
 
-h1, h2 {
-  text-align: center;
-  color: #003366;
-}
+h1, h2 { text-align: center; color: #003366; }
+.pregunta { margin-bottom: 18px; }
+.checkbox-group label { display: block; }
 
-.pregunta {
+#timer {
+  display: none;
+  text-align: center;
+  font-size: 20px;
+  background: #003366;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
   margin-bottom: 20px;
 }
 
-.seccion {
-  border-bottom: 2px solid #ddd;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-}
-
-.checkbox-group label {
-  display: block;
-  margin-bottom: 6px;
-}
-
-#adRecarga, #adVentana {
+#ad {
   display: none;
   background: #fff3cd;
   border-left: 6px solid #ffc107;
   padding: 15px;
-  margin-bottom: 15px;
   font-weight: bold;
+  margin-bottom: 15px;
 }
+
+#paginaExamen { display: none; }
 
 #bloqueado {
   display: none;
@@ -72,6 +63,7 @@ h1, h2 {
 button {
   padding: 12px 25px;
   font-size: 16px;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -82,162 +74,148 @@ button {
 
 <h1>Examen de Seguridad – Contratistas</h1>
 
-<div id="adRecarga">
-⚠️ ADVERTENCIA:<br>
-Si recargas nuevamente, el examen se bloqueará.
-</div>
+<div id="timer">Tiempo restante: <span id="time">20:00</span></div>
+<div id="ad"></div>
 
-<div id="adVentana">
-⚠️ ADVERTENCIA:<br>
-No cambies de pestaña nuevamente o el examen será bloqueado.
-</div>
+<!-- ================= PÁGINA 1: DATOS ================= -->
+<div id="paginaDatos">
+<h2>Datos del participante</h2>
 
-<!-- ===== DATOS PERSONALES ===== -->
-<div class="seccion">
-<h2>Datos del Participante</h2>
+<div class="pregunta">Nombre completo<br><input id="nombre"></div>
+<div class="pregunta">Empresa<br><input id="empresa"></div>
+<div class="pregunta">Puesto / actividad<br><input id="puesto"></div>
 
 <div class="pregunta">
-<strong>Nombre completo</strong><br>
-<input type="text" id="nombre" required>
-</div>
-
-<div class="pregunta">
-<strong>Empresa para la que trabaja</strong><br>
-<input type="text" id="empresa" required>
-</div>
-
-<div class="pregunta">
-<strong>Puesto / actividad</strong><br>
-<input type="text" id="puesto" required>
-</div>
-
-<div class="pregunta">
-<strong>Trabajos que realiza</strong>
+Trabajos que realiza
 <div class="checkbox-group">
-  <label><input type="checkbox" value="Alturas"> Trabajos en alturas</label>
-  <label><input type="checkbox" value="Electricidad"> Electricidad</label>
-  <label><input type="checkbox" value="Espacios confinados"> Espacios confinados</label>
-  <label><input type="checkbox" value="Soldadura"> Soldadura</label>
-  <label><input type="checkbox" value="Maquinaria pesada"> Maquinaria pesada</label>
-  <label><input type="checkbox" value="Otro"> Otro</label>
-</div>
+<label><input type="checkbox" value="Trabajos en alturas"> Trabajos en alturas</label>
+<label><input type="checkbox" value="Electricidad"> Electricidad</label>
+<label><input type="checkbox" value="Espacios confinados"> Espacios confinados</label>
+<label><input type="checkbox" value="Soldadura"> Soldadura</label>
+<label><input type="checkbox" value="Maquinaria pesada"> Maquinaria pesada</label>
 </div>
 </div>
 
-<!-- ===== EXAMEN ===== -->
-<div class="seccion">
+<button onclick="irAExamen()">Siguiente</button>
+</div>
+
+<!-- ================= PÁGINA 2: EXAMEN ================= -->
+<div id="paginaExamen">
 <h2>Examen</h2>
 
-<div id="preguntas">
-  <div class="pregunta">¿Objetivo del EPP?<br><input></div>
-  <div class="pregunta">Equipo obligatorio<br><input></div>
-  <div class="pregunta">¿Qué hacer ante un incidente?<br><input></div>
-  <div class="pregunta">¿A quién reportar un accidente?<br><input></div>
-</div>
-</div>
+<div class="pregunta">¿Objetivo del EPP?<br><input></div>
+<div class="pregunta">Equipo obligatorio<br><input></div>
+<div class="pregunta">¿Qué hacer ante un incidente?<br><input></div>
+<div class="pregunta">¿A quién reportar un accidente?<br><input></div>
 
 <button onclick="enviar()">Enviar examen</button>
+</div>
 
 </div>
 
 <div id="bloqueado">
 🚫 <strong>EXAMEN BLOQUEADO</strong><br><br>
-El intento fue invalidado y el progreso eliminado.
+El intento fue invalidado y registrado.
 </div>
 
 <script>
-/* ===== VARIABLES ===== */
-let recargas = Number(sessionStorage.getItem("recargas") || 0);
-let cambiosVentana = Number(sessionStorage.getItem("cambiosVentana") || 0);
-let capturas = Number(sessionStorage.getItem("capturas") || 0);
-let bloqueado = sessionStorage.getItem("bloqueado") === "true";
-let alertaActiva = false;
+// ================= CONFIGURACIÓN =================
+const FLOW_URL =
+"https://default94c3e67c9e2d4800a6b7635d978821.65.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/40132eb2e0774af688b5576da3fa4601/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SrRwsU9wbBGwQ5vvR7Uc0DYnHBaPeIRS5OfitDOlYw4";
 
-/* ===== ALERTA SEGURA ===== */
-function mostrarAlerta(mensaje) {
+const TOKEN_EXAMEN = "EHSS-SEGURIDAD-2026";
+
+// ================= VARIABLES =================
+let tiempo = 1200;
+let advertencias = 0;
+let bloqueado = false;
+let alertaActiva = false;
+let timerActivo = false;
+
+// ================= TIMER =================
+setInterval(() => {
+  if (!timerActivo || bloqueado) return;
+  tiempo--;
+  const m = Math.floor(tiempo / 60);
+  const s = tiempo % 60;
+  time.textContent = `${m}:${s.toString().padStart(2,"0")}`;
+  if (tiempo <= 0) bloquear("Tiempo agotado");
+}, 1000);
+
+// ================= NAVEGACIÓN =================
+function irAExamen() {
+  if (!nombre.value || !empresa.value || !puesto.value) {
+    alert("⚠️ Complete todos los datos");
+    return;
+  }
+
+  document.getElementById("paginaDatos").style.display = "none";
+  document.getElementById("paginaExamen").style.display = "block";
+  document.getElementById("timer").style.display = "block";
+  timerActivo = true;
+}
+
+// ================= AVISO =================
+function aviso(msg) {
   alertaActiva = true;
-  alert(mensaje);
+  ad.style.display = "block";
+  ad.textContent = msg;
   setTimeout(() => alertaActiva = false, 300);
 }
 
-/* ===== MEZCLAR PREGUNTAS ===== */
-function mezclarPreguntas() {
-  let cont = document.getElementById("preguntas");
-  [...cont.children].sort(() => Math.random() - 0.5).forEach(p => cont.appendChild(p));
-}
-
-/* ===== ESTADO INICIAL ===== */
-if (bloqueado) {
-  document.getElementById("examen").style.display = "none";
-  document.getElementById("bloqueado").style.display = "block";
-} else {
-  mezclarPreguntas();
-}
-
-/* ===== CAMBIO DE PESTAÑA ===== */
+// ================= TRAMPAS =================
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden && !bloqueado) {
-    cambiosVentana++;
-    sessionStorage.setItem("cambiosVentana", cambiosVentana);
-    document.body.style.filter = "blur(10px)";
-
-    cambiosVentana === 1
-      ? document.getElementById("adVentana").style.display = "block"
-      : bloquear();
-  } else {
-    document.body.style.filter = "none";
-  }
+  if (document.hidden) registrarFalta("Cambio de pestaña");
 });
 
-/* ===== POSIBLE SCREENSHOT ===== */
 window.addEventListener("blur", () => {
-  if (!bloqueado && !alertaActiva) {
-    capturas++;
-    sessionStorage.setItem("capturas", capturas);
-    capturas === 1
-      ? mostrarAlerta("⚠️ ADVERTENCIA: Posible captura detectada.")
-      : bloquear();
-  }
+  if (!alertaActiva) registrarFalta("Posible captura");
 });
 
-/* ===== RECARGA ===== */
-window.addEventListener("beforeunload", () => {
-  if (!bloqueado) {
-    recargas++;
-    sessionStorage.setItem("recargas", recargas);
-    recargas === 1
-      ? sessionStorage.setItem("mostrarAvisoRecarga", "true")
-      : sessionStorage.setItem("bloqueado", "true");
-  }
-});
+["copy","cut","paste","contextmenu"].forEach(e =>
+  document.addEventListener(e, ev => ev.preventDefault())
+);
 
-if (sessionStorage.getItem("mostrarAvisoRecarga")) {
-  document.getElementById("adRecarga").style.display = "block";
-  sessionStorage.removeItem("mostrarAvisoRecarga");
+// ================= FALTAS =================
+function registrarFalta(motivo) {
+  advertencias++;
+  aviso("⚠️ " + motivo);
+  if (advertencias >= 2) bloquear(motivo);
 }
 
-if (sessionStorage.getItem("bloqueado") === "true") bloquear();
-
-/* ===== BLOQUEO ===== */
-function bloquear() {
-  sessionStorage.setItem("bloqueado", "true");
-  document.getElementById("examen").style.display = "none";
+// ================= BLOQUEO =================
+function bloquear(motivo) {
+  bloqueado = true;
+  examen.style.display = "none";
   document.getElementById("bloqueado").style.display = "block";
+  enviar(true, motivo);
 }
 
-/* ===== BLOQUEOS ===== */
-document.addEventListener("contextmenu", e => e.preventDefault());
-["copy","cut","paste"].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
-document.addEventListener("keydown", e => {
-  if ((e.ctrlKey || e.metaKey) && ["c","x","v","u","s","p"].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-  }
-});
+// ================= ENVÍO =================
+function enviar(esBloqueo=false, motivo="") {
+  if (!esBloqueo && bloqueado) return;
 
-/* ===== ENVÍO ===== */
-function enviar() {
-  if (sessionStorage.getItem("bloqueado") === "true") return;
-  mostrarAlerta("✅ Examen enviado correctamente");
+  const trabajos = [...document.querySelectorAll("input[type=checkbox]:checked")]
+    .map(c => c.value);
+
+  const payload = {
+    token: TOKEN_EXAMEN,
+    nombre: nombre.value,
+    empresa: empresa.value,
+    puesto: puesto.value,
+    trabajos,
+    advertencias,
+    bloqueado: esBloqueo,
+    motivo
+  };
+
+  fetch(FLOW_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!esBloqueo) alert("✅ Examen enviado correctamente");
 }
 </script>
 
