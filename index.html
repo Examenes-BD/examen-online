@@ -110,26 +110,26 @@ El intento fue invalidado y registrado.
 </div>
 
 <script>
-/* ==== CONFIG ==== */
+/* ===== CONFIG ===== */
 const FLOW_URL = "PEGA_AQUI_TU_URL_DE_POWER_AUTOMATE";
 const TOKEN_EXAMEN = "EHSS-SEGURIDAD-2026";
 
-/* ==== VARIABLES ==== */
-let tiempo = 3600;        // ⏱️ 1 hora
+/* ===== VARIABLES ===== */
+let tiempo = 3600;          // 1 hora
 let timerActivo = false;
 let advertencias = 0;
 let bloqueado = false;
 let examenEnviado = false;
 
-/* >>> CLAVE PARA EVITAR DOBLE CONTEO <<< */
-let cambioEnProceso = false;
+/* >>> DEBOUNCE REAL (CLAVE FINAL) <<< */
+let ultimoEventoTrampa = 0;
 
-/* ==== CRONÓMETRO ==== */
+/* ===== CRONÓMETRO ===== */
 setInterval(()=>{
   if(!timerActivo || bloqueado) return;
 
   tiempo--;
-  const min = Math.floor(tiempo/60);
+  const min = Math.floor(tiempo / 60);
   const seg = tiempo % 60;
   time.textContent = `${min}:${String(seg).padStart(2,"0")}`;
 
@@ -138,13 +138,13 @@ setInterval(()=>{
   }
 },1000);
 
-/* ==== MENSAJES INTERNOS ==== */
+/* ===== MENSAJES ===== */
 function mostrarMensaje(texto){
-  mensaje.style.display = "block";
+  mensaje.style.display="block";
   mensaje.textContent = texto;
 }
 
-/* ==== NAVEGACIÓN ==== */
+/* ===== NAVEGACIÓN ===== */
 function irAExamen(){
   if(!nombre.value || !empresa.value || !puesto.value){
     mostrarMensaje("⚠️ Complete todos los datos antes de continuar");
@@ -158,31 +158,28 @@ function irAExamen(){
   timerActivo = true;
 }
 
-/* ==== ANTI-TRAMPA CORREGIDO ==== */
+/* ===== ANTI TRAMPA (FORMA CORRECTA) ===== */
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden && !bloqueado){
-    cambioEnProceso = true;
+  if(document.hidden && timerActivo && !bloqueado){
     registrarFalta("Cambio de pestaña o aplicación");
-
-    setTimeout(()=>{
-      cambioEnProceso = false;
-    },500);
   }
 });
 
 window.addEventListener("blur",()=>{
-  if(bloqueado) return;
-  if(cambioEnProceso) return;   // ✅ evita conteo doble
-  registrarFalta("Posible captura de pantalla");
+  if(timerActivo && !bloqueado){
+    registrarFalta("Posible captura de pantalla");
+  }
 });
 
-/* ==== BLOQUEAR COPIA ==== */
-["copy","cut","paste","contextmenu"].forEach(ev=>{
-  document.addEventListener(ev,e=>e.preventDefault());
-});
-
-/* ==== FALTAS ==== */
+/* ===== CONTROL ÚNICO DE FALTAS ===== */
 function registrarFalta(motivo){
+  const ahora = Date.now();
+
+  // ✅ Evita conteo doble (visibility + blur)
+  if (ahora - ultimoEventoTrampa < 700) return;
+
+  ultimoEventoTrampa = ahora;
+
   advertencias++;
   mostrarMensaje(`⚠️ Advertencia ${advertencias}/2: ${motivo}`);
 
@@ -191,16 +188,22 @@ function registrarFalta(motivo){
   }
 }
 
-/* ==== BLOQUEO ==== */
+/* ===== BLOQUEO ===== */
 function bloquear(motivo){
   if(examenEnviado) return;
+
   bloqueado = true;
   examen.style.display="none";
   document.getElementById("bloqueado").style.display="block";
   enviar(true, motivo);
 }
 
-/* ==== ENVÍO ÚNICO ==== */
+/* ===== BLOQUEAR COPIA ===== */
+["copy","cut","paste","contextmenu"].forEach(ev =>
+  document.addEventListener(ev, e => e.preventDefault())
+);
+
+/* ===== ENVÍO ÚNICO ===== */
 function enviar(esBloqueo=false, motivo=""){
   if(examenEnviado) return;
   examenEnviado = true;
@@ -233,3 +236,4 @@ function enviar(esBloqueo=false, motivo=""){
 
 </body>
 </html>
+
