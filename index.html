@@ -2,235 +2,207 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Examen de Seguridad</title>
+<title>Exámenes de Seguridad – Contratistas</title>
 
 <style>
-body{
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  margin:0;
-}
-
-*{ user-select:none }
-input{ user-select:text }
-
-.contenedor{
-  max-width:900px;
-  margin:30px auto;
-  background:#fff;
-  padding:30px;
-  border-radius:14px;
-}
-
-h1,h2{ text-align:center; color:#003366 }
-.pregunta{ margin-bottom:15px }
-.checkbox-group label{ display:block }
-
-#paginaExamen{ display:none }
-#timer{ display:none }
-
-#mensaje{
-  display:none;
-  background:#fff3cd;
-  border-left:6px solid #ffc107;
-  padding:15px;
-  font-weight:bold;
-  margin-bottom:15px;
-}
-
-#bloqueado{
-  display:none;
-  background:#b00020;
-  color:white;
-  padding:40px;
-  text-align:center;
-  border-radius:14px;
-}
-
-button{
-  padding:12px 25px;
-  font-size:16px;
-  cursor:pointer;
-}
-button:disabled{
-  opacity:0.6;
-  cursor:not-allowed;
-}
+body{font-family:Arial;background:#f4f6f8;margin:0}
+.contenedor{max-width:1000px;margin:30px auto;background:#fff;padding:30px;border-radius:12px}
+h1,h2,h3{color:#003366}
+.pregunta{margin-bottom:15px}
+.opciones label{display:block;margin-left:10px}
+.seccion{display:none}
+.examen-trabajo{border:1px solid #ddd;padding:20px;margin-bottom:25px;border-radius:10px}
 </style>
 </head>
 
 <body>
 
-<div class="contenedor" id="examen">
+<div class="contenedor">
 
-<h1>Examen de Seguridad – Contratistas</h1>
+<h1>Exámenes de Seguridad para Contratistas</h1>
 
-<div id="timer">Tiempo restante: <span id="time">60:00</span></div>
-<div id="mensaje"></div>
-
-<!-- ===== PÁGINA 1 ===== -->
-<div id="paginaDatos">
+<!-- ================= DATOS ================= -->
+<div id="datos" class="seccion" style="display:block">
 <h2>Datos del participante</h2>
-
-<div class="pregunta">Nombre completo<br><input id="nombre"></div>
+<div class="pregunta">Nombre<br><input id="nombre"></div>
 <div class="pregunta">Empresa<br><input id="empresa"></div>
-<div class="pregunta">Puesto / actividad<br><input id="puesto"></div>
+<div class="pregunta">Puesto<br><input id="puesto"></div>
+<button onclick="irATrabajos()">Continuar</button>
+</div>
+
+<!-- ================= TRABAJOS ================= -->
+<div id="trabajos" class="seccion">
+<h2>Seleccione los trabajos que realiza</h2>
+
+<label><input type="checkbox" value="Alturas"> Trabajos en Alturas</label>
+<label><input type="checkbox" value="Izajes"> Izajes</label>
+<label><input type="checkbox" value="Confinados"> Espacios Confinados</label>
+<label><input type="checkbox" value="Excavaciones"> Excavaciones</label>
+<label><input type="checkbox" value="Quimicos"> Sustancias Químicas</label>
+<label><input type="checkbox" value="Soldadura"> Corte y Soldadura</label>
+
+<br><br>
+<button onclick="irAExamen()">Iniciar Examen</button>
+</div>
+
+<!-- ================= EXAMEN ================= -->
+<div id="examen" class="seccion">
+
+<!-- ===== ALTURAS ===== -->
+<div class="examen-trabajo" data-trabajo="Alturas">
+<h3>Trabajos en Alturas</h3>
 
 <div class="pregunta">
-Trabajos que realiza
-<div class="checkbox-group">
-  <label><input type="checkbox" value="Trabajos en alturas"> Trabajos en alturas</label>
-  <label><input type="checkbox" value="Electricidad"> Electricidad</label>
-  <label><input type="checkbox" value="Espacios confinados"> Espacios confinados</label>
-  <label><input type="checkbox" value="Soldadura"> Soldadura</label>
-  <label><input type="checkbox" value="Maquinaria pesada"> Maquinaria pesada</label>
+1. Margen mínimo de caída requerido:
+<div class="opciones">
+<label><input type="radio" name="alt1">5.56 m</label>
+<label><input type="radio" name="alt1">5.28 m</label>
+<label><input type="radio" name="alt1">5.47 m</label>
+<label><input type="radio" name="alt1">5.33 m</label>
 </div>
 </div>
 
-<button onclick="irAExamen()">Siguiente</button>
+<div class="pregunta">
+2. Capacidad de punto fijo seguro:
+<div class="opciones">
+<label><input type="radio" name="alt2">3000 lb/f</label>
+<label><input type="radio" name="alt2">5000 lb/f</label>
+<label><input type="radio" name="alt2">4000 lb/f</label>
+<label><input type="radio" name="alt2">7000 lb/f</label>
+</div>
 </div>
 
-<!-- ===== PÁGINA 2 ===== -->
-<div id="paginaExamen">
-<h2>Examen</h2>
-
-<div class="pregunta">¿Objetivo del EPP?<br><input></div>
-<div class="pregunta">Equipo obligatorio<br><input></div>
-<div class="pregunta">¿Qué hacer ante un incidente?<br><input></div>
-<div class="pregunta">¿A quién reportar un accidente?<br><input></div>
-
-<button id="btnEnviar" onclick="enviar()">Enviar examen</button>
+<div class="pregunta">
+3. Distancia mínima de restricción:
+<div class="opciones">
+<label><input type="radio" name="alt3">1.5 m</label>
+<label><input type="radio" name="alt3">2 m</label>
+<label><input type="radio" name="alt3">1.3 m</label>
+<label><input type="radio" name="alt3">1.2 m</label>
+</div>
+</div>
 </div>
 
+<!-- ===== IZAJES ===== -->
+<div class="examen-trabajo" data-trabajo="Izajes">
+<h3>Izajes</h3>
+
+<div class="pregunta">
+1. Acción correcta antes de autorizar izaje:
+<div class="opciones">
+<label><input type="radio" name="iz1">Proceder directamente</label>
+<label><input type="radio" name="iz1">Usar grúa más pequeña</label>
+<label><input type="radio" name="iz1">Reducir velocidad</label>
+<label><input type="radio" name="iz1">Verificar condiciones de seguridad</label>
+</div>
 </div>
 
-<div id="bloqueado">
-🚫 <strong>EXAMEN BLOQUEADO</strong><br><br>
-El intento fue invalidado y registrado.
+<div class="pregunta">
+2. Configuración con mayor capacidad:
+<div class="opciones">
+<label><input type="radio" name="iz2">Vertical</label>
+<label><input type="radio" name="iz2">Canasta</label>
+<label><input type="radio" name="iz2">Estrangulada</label>
+<label><input type="radio" name="iz2">Diagonal</label>
+</div>
+</div>
+</div>
+
+<!-- ===== CONFINADOS ===== -->
+<div class="examen-trabajo" data-trabajo="Confinados">
+<h3>Espacios Confinados</h3>
+
+<div class="pregunta">
+1. Inflamabilidad máxima permitida:
+<div class="opciones">
+<label><input type="radio" name="con1">5%</label>
+<label><input type="radio" name="con1">10%</label>
+<label><input type="radio" name="con1">15%</label>
+<label><input type="radio" name="con1">20%</label>
+</div>
+</div>
+</div>
+
+<!-- ===== EXCAVACIONES ===== -->
+<div class="examen-trabajo" data-trabajo="Excavaciones">
+<h3>Excavaciones</h3>
+
+<div class="pregunta">
+1. Distancia máxima para escalera:
+<div class="opciones">
+<label><input type="radio" name="exc1">7 m</label>
+<label><input type="radio" name="exc1">9 m</label>
+<label><input type="radio" name="exc1">4 m</label>
+<label><input type="radio" name="exc1">6 m</label>
+</div>
+</div>
+</div>
+
+<!-- ===== QUÍMICOS ===== -->
+<div class="examen-trabajo" data-trabajo="Quimicos">
+<h3>Sustancias Químicas</h3>
+
+<div class="pregunta">
+1. Clasificación SGA:
+<div class="opciones">
+<label><input type="radio" name="qui1">Físicos, químicos y biológicos</label>
+<label><input type="radio" name="qui1">Físico, salud o ambiente</label>
+<label><input type="radio" name="qui1">Químicos, térmicos</label>
+<label><input type="radio" name="qui1">Medio ambiente</label>
+</div>
+</div>
+</div>
+
+<!-- ===== SOLDADURA ===== -->
+<div class="examen-trabajo" data-trabajo="Soldadura">
+<h3>Corte y Soldadura</h3>
+
+<div class="pregunta">
+1. Definición de líquido inflamable:
+<div class="opciones">
+<label><input type="radio" name="sol1">Líquido combustible</label>
+<label><input type="radio" name="sol1">Gas pirofórico</label>
+<label><input type="radio" name="sol1">Gas inflamable</label>
+<label><input type="radio" name="sol1">Líquido inflamable</label>
+</div>
+</div>
+</div>
+
+<button onclick="alert('Examen listo para calificar con Power Automate')">
+Enviar examen
+</button>
+
+</div>
+
 </div>
 
 <script>
-/* ===== CONFIG ===== */
-const FLOW_URL = "PEGA_AQUI_TU_URL_DE_POWER_AUTOMATE";
-const TOKEN_EXAMEN = "EHSS-SEGURIDAD-2026";
-
-/* ===== VARIABLES ===== */
-let tiempo = 3600;          // 1 hora
-let timerActivo = false;
-let advertencias = 0;
-let bloqueado = false;
-let examenEnviado = false;
-
-/* >>> DEBOUNCE REAL (CLAVE FINAL) <<< */
-let ultimoEventoTrampa = 0;
-
-/* ===== CRONÓMETRO ===== */
-setInterval(()=>{
-  if(!timerActivo || bloqueado) return;
-
-  tiempo--;
-  const min = Math.floor(tiempo / 60);
-  const seg = tiempo % 60;
-  time.textContent = `${min}:${String(seg).padStart(2,"0")}`;
-
-  if(tiempo <= 0){
-    bloquear("Tiempo agotado");
+function irATrabajos(){
+  if(!nombre.value||!empresa.value||!puesto.value){
+    alert("Complete datos");
+    return;
   }
-},1000);
-
-/* ===== MENSAJES ===== */
-function mostrarMensaje(texto){
-  mensaje.style.display="block";
-  mensaje.textContent = texto;
+  datos.style.display="none";
+  trabajos.style.display="block";
 }
 
-/* ===== NAVEGACIÓN ===== */
 function irAExamen(){
-  if(!nombre.value || !empresa.value || !puesto.value){
-    mostrarMensaje("⚠️ Complete todos los datos antes de continuar");
+  const seleccionados=[...document.querySelectorAll('input[type=checkbox]:checked')]
+  .map(c=>c.value);
+
+  if(seleccionados.length===0){
+    alert("Seleccione al menos un trabajo");
     return;
   }
 
-  mensaje.style.display="none";
-  paginaDatos.style.display="none";
-  paginaExamen.style.display="block";
-  timer.style.display="block";
-  timerActivo = true;
-}
-
-/* ===== ANTI TRAMPA (FORMA CORRECTA) ===== */
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden && timerActivo && !bloqueado){
-    registrarFalta("Cambio de pestaña o aplicación");
-  }
-});
-
-window.addEventListener("blur",()=>{
-  if(timerActivo && !bloqueado){
-    registrarFalta("Posible captura de pantalla");
-  }
-});
-
-/* ===== CONTROL ÚNICO DE FALTAS ===== */
-function registrarFalta(motivo){
-  const ahora = Date.now();
-
-  // ✅ Evita conteo doble (visibility + blur)
-  if (ahora - ultimoEventoTrampa < 700) return;
-
-  ultimoEventoTrampa = ahora;
-
-  advertencias++;
-  mostrarMensaje(`⚠️ Advertencia ${advertencias}/2: ${motivo}`);
-
-  if(advertencias >= 2){
-    bloquear(motivo);
-  }
-}
-
-/* ===== BLOQUEO ===== */
-function bloquear(motivo){
-  if(examenEnviado) return;
-
-  bloqueado = true;
-  examen.style.display="none";
-  document.getElementById("bloqueado").style.display="block";
-  enviar(true, motivo);
-}
-
-/* ===== BLOQUEAR COPIA ===== */
-["copy","cut","paste","contextmenu"].forEach(ev =>
-  document.addEventListener(ev, e => e.preventDefault())
-);
-
-/* ===== ENVÍO ÚNICO ===== */
-function enviar(esBloqueo=false, motivo=""){
-  if(examenEnviado) return;
-  examenEnviado = true;
-
-  document.getElementById("btnEnviar").disabled = true;
-
-  const trabajos = [...document.querySelectorAll("input[type=checkbox]:checked")]
-    .map(c => c.value);
-
-  fetch(FLOW_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      token: TOKEN_EXAMEN,
-      nombre: nombre.value,
-      empresa: empresa.value,
-      puesto: puesto.value,
-      trabajos,
-      advertencias,
-      bloqueado: esBloqueo,
-      motivo
-    })
+  document.querySelectorAll(".examen-trabajo").forEach(e=>e.style.display="none");
+  seleccionados.forEach(t=>{
+    document.querySelectorAll(`[data-trabajo="${t}"]`)
+    .forEach(e=>e.style.display="block");
   });
 
-  if(!esBloqueo){
-    mostrarMensaje("✅ Examen enviado correctamente");
-  }
+  trabajos.style.display="none";
+  examen.style.display="block";
 }
 </script>
 
